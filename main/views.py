@@ -13,9 +13,20 @@ class ProductMaterialsView(generics.GenericAPIView):
 
     def get(self, request):
         products = [
-            {'product': 'Koylak', 'qty': 30, 'materials': {'Mato': 24, 'Tugma': 150, 'Ip': 300}},
-            {'product': 'Shim', 'qty': 20, 'materials': {'Mato': 28, 'Ip': 300, 'Zamok': 20}}
+            {'product': 'Koylak', 'qty': 45, 'materials': {'Mato': 0.8, 'Tugma': 5, 'Ip': 10}},
+            {'product': 'Shim', 'qty': 20, 'materials': {'Mato': 1.4, 'Ip': 15, 'Zamok': 1}}
         ]
+
+        # Iterate through each product
+        for product in products:
+            qty = product['qty']
+            materials = product['materials']
+
+            # Multiply each material quantity by the product quantity
+            updated_materials = {material: qty * quantity for material, quantity in materials.items()}
+
+            # Update the 'materials' dictionary in the product with the updated materials
+            product['materials'] = updated_materials
 
         remaining_materials = defaultdict(lambda: defaultdict(int))
 
@@ -44,7 +55,8 @@ class ProductMaterialsView(generics.GenericAPIView):
                 material_res = []
 
                 while material_qty > 0:
-                    warehouse = Warehouses.objects.filter(material__name=material_name, remainder__gt=0).order_by('id').first()
+                    warehouse = Warehouses.objects.filter(material__name=material_name, remainder__gt=0).order_by(
+                        'id').first()
                     if not warehouse:
                         break
 
@@ -78,5 +90,3 @@ class ProductMaterialsView(generics.GenericAPIView):
             result.append(product_res)
 
         return Response({"result": result}, check_and_adjust_remainders())
-
-
